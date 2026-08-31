@@ -3,37 +3,26 @@
 
 from __future__ import annotations
 
-import hashlib
 import re
-import shutil
-import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CACHE = ROOT / '.cache' / 'wordlists'
 DATA = ROOT / 'data'
 
 TWELVE_DICTS_URL = (
     'https://downloads.sourceforge.net/project/wordlist/'
     '12Dicts/6.0/12dicts-6.0.2.zip'
 )
-TWELVE_DICTS_SHA256 = (
-    '64ac1d35acb66b550c7ebc56e080b62e'
-    '0bad8f5984d72059dc2e05ac48780e52'
-)
 TWELVE_DICTS_MEMBER = 'American/2of12.txt'
 
 SCOWL_URL = (
     'https://downloads.sourceforge.net/project/wordlist/'
     'SCOWL/2020.12.07/scowl-2020.12.07.zip'
-)
-SCOWL_SHA256 = (
-    'dc3435e1cb56f3394aea91b5d2ab5d10'
-    'd80c98bc7dd88c3fccb7348f6ab913a0'
 )
 SCOWL_SPELLINGS = frozenset({
     'english', 'american', 'british', 'british_z',
@@ -50,27 +39,26 @@ DOWNLOAD_ATTEMPTS = 5
 
 
 def main() -> None:
-    CACHE.mkdir(parents=True, exist_ok=True)
     DATA.mkdir(parents=True, exist_ok=True)
 
-    twelve_zip = download(
-        TWELVE_DICTS_URL, CACHE / '12dicts-6.0.2.zip',
-        TWELVE_DICTS_SHA256,
-    )
-    scowl_zip = download(
-        SCOWL_URL, CACHE / 'scowl-2020.12.07.zip',
-        SCOWL_SHA256,
-    )
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_dir = Path(tmp)
+        twelve_zip = tmp_dir / '12dicts-6.0.2.zip'
+        scowl_zip = tmp_dir / 'scowl-2020.12.07.zip'
+        download(TWELVE_DICTS_URL, twelve_zip)
+        download(SCOWL_URL, scowl_zip)
 
-    targets = {
-        word for word in read_zip_words(twelve_zip, TWELVE_DICTS_MEMBER)
-        if len(word) == TARGET_LENGTH
-    }
-    allowed = {length: set() for length in ALLOWED_LENGTHS}
-    for word in read_scowl_words(scowl_zip):
-        if len(word) in allowed:
-            allowed[len(word)].add(word)
-    allowed[TARGET_LENGTH].update(targets)
+        targets = {
+            word for word in read_zip_words(
+                twelve_zip, TWELVE_DICTS_MEMBER,
+            )
+            if len(word) == TARGET_LENGTH
+        }
+        allowed = {length: set() for length in ALLOWED_LENGTHS}
+        for word in read_scowl_words(scowl_zip):
+            if len(word) in allowed:
+                allowed[len(word)].add(word)
+        allowed[TARGET_LENGTH].update(targets)
 
     write_words(DATA / 'targets.txt', targets)
     for length in ALLOWED_LENGTHS:
@@ -143,57 +131,27 @@ def write_words(path: Path, words: set[str]) -> None:
     path.write_text(text, encoding='ascii')
 
 
-def download(url: str, dest: Path, sha256: str) -> Path:
-    if dest.exists() and checksum(dest) == sha256:
-        return dest
-    if dest.exists():
-        dest.unlink()
-
+def download(url: str, dest: Path) -> None:
     last_error: Exception | None = None
-    part = dest.with_suffix(dest.suffix + '.part')
     for attempt in range(DOWNLOAD_ATTEMPTS):
         try:
             print(f'download {dest.name} ({attempt + 1})', flush=True)
-            fetch_to(url, part)
-            digest = checksum(part)
-            if digest != sha256:
-                raise RuntimeError(
-                    f'checksum mismatch for {dest.name}: {digest}'
-                )
-            part.replace(dest)
-            return dest
+            fetch_to(url, dest)
+            return
         except Exception as error:
             last_error = error
-            if part.exists():
-                part.unlink()
+            if dest.exists():
+                dest.unlink()
             time.sleep(2 ** attempt)
     raise RuntimeError(f'could not download {url}') from last_error
 
 
 def fetch_to(url: str, dest: Path) -> None:
-    curl = shutil.which('curl')
-    if curl is not None:
-        subprocess.run(
-            [
-                curl, '-fsSL', '--retry', '3', '--retry-delay', '2',
-                '-A', USER_AGENT, '-o', str(dest), url,
-            ],
-            check=True,
-        )
-        return
     request = urllib.request.Request(
         url, headers={'User-Agent': USER_AGENT},
     )
     with urllib.request.urlopen(request, timeout=120) as response:
         dest.write_bytes(response.read())
-
-
-def checksum(path: Path) -> str:
-    hasher = hashlib.sha256()
-    with path.open('rb') as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b''):
-            hasher.update(chunk)
-    return hasher.hexdigest()
 
 
 if __name__ == '__main__':

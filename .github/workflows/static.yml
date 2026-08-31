@@ -31,15 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Cache word list downloads
-        uses: actions/cache@v4
-        with:
-          path: .cache/wordlists
-          key: wordlists-${{ hashFiles('scripts/build_wordlists.py') }}
       - name: Build word lists
         run: npm run words
-      - name: Drop download cache from the site
-        run: rm -rf .cache
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
