@@ -1,0 +1,55 @@
+body {
+  font-family: sans-serif;
+  margin: 1em;
+}
+
+.row {
+  display: flex;
+  width: max-content;
+  margin-bottom: 4px;
+}
+
+.row.active {
+  outline: 1px solid black;
+}
+
+.tile {
+  position: relative;
+  width: 2em;
+  height: 2em;
+  border: 1px solid black;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tile.exact { background: green; color: white; }
+.tile.present { background: gold; }
+.tile.absent { background: gray; color: white; }
+
+.arrow-stack {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  font-size: 8px;
+  line-height: 1;
+}
+
+.arrow-stack.left { left: 1px; }
+.arrow-stack.right { right: 1px; }
+
+.message.bad { color: red; }
+.message.good { color: green; }
+
+.keyboard-row { margin-bottom: 4px; }
+
+.key {
+  min-width: 2em;
+  height: 2em;
+}
+
+.key.wide { min-width: 4em; }
+.key.absent { background: gray; color: white; }
+.key.present { background: gold; }
+.key.exact { background: green; color: white; }

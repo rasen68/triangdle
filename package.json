@@ -1,0 +1,11 @@
+{
+  "name": "triangdle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "words": "python3 scripts/build_wordlists.py",
+    "test": "node --test tests/*.test.js",
+    "serve": "python3 -m http.server 8080"
+  }
+}
