@@ -61,9 +61,28 @@ export function mergeKeyboardStatuses(current, evaluation, guess) {
   return next;
 }
 
+const DAILY_TZ = 'America/New_York';
+
+function civilDateInZone(date, timeZone) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(date);
+  const num = (type) =>
+    Number(parts.find((part) => part.type === type).value);
+  return {
+    year: num('year'),
+    month: num('month'),
+    day: num('day'),
+  };
+}
+
 export function dailyNumber(date = new Date()) {
+  const { year, month, day } = civilDateInZone(date, DAILY_TZ);
   const start = Date.UTC(2026, 0, 1);
-  const utc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const utc = Date.UTC(year, month - 1, day);
   return Math.floor((utc - start) / 86400000) + 1;
 }
 

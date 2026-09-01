@@ -53,9 +53,37 @@ test('keyboard status only improves', () => {
   assert.equal(second.a, 'exact');
 });
 
-test('daily numbering is deterministic from the calendar date', () => {
-  assert.equal(dailyNumber(new Date(2026, 0, 1)), 1);
-  assert.equal(dailyNumber(new Date(2026, 0, 2)), 2);
+test('daily numbering uses Philly date', () => {
+  // 2026-01-01 00:00 EST = 05:00 UTC → puzzle 1
+  assert.equal(
+    dailyNumber(new Date('2026-01-01T05:00:00.000Z')),
+    1,
+  );
+  // 23:00 EST Jan 1 is already Jan 2 UTC; still puzzle 1
+  assert.equal(
+    dailyNumber(new Date('2026-01-02T04:00:00.000Z')),
+    1,
+  );
+  // 2026-01-02 00:00 EST = 05:00 UTC → puzzle 2
+  assert.equal(
+    dailyNumber(new Date('2026-01-02T05:00:00.000Z')),
+    2,
+  );
+});
+
+test('daily numbering follows EDT after the spring-forward', () => {
+  // 2026-07-01 00:00 EDT = 04:00 UTC
+  const july1 = dailyNumber(new Date('2026-07-01T04:00:00.000Z'));
+  // 23:00 EDT July 1 is already July 2 UTC; still July 1 in NY
+  assert.equal(
+    dailyNumber(new Date('2026-07-02T03:00:00.000Z')),
+    july1,
+  );
+  // 2026-07-02 00:00 EDT = 04:00 UTC → next puzzle
+  assert.equal(
+    dailyNumber(new Date('2026-07-02T04:00:00.000Z')),
+    july1 + 1,
+  );
 });
 
 test('seeded index is deterministic and in range', () => {
