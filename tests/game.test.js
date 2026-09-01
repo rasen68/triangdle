@@ -10,15 +10,15 @@ import {
 
 test('short guesses compare against the full target', () => {
   assert.deepEqual(
-    evaluateGuess('aa', 'bbaaaa').map((x) => x.status),
+    evaluateGuess('ee', 'drexel').map((x) => x.status),
     ['present', 'present'],
   );
 });
 
 test('exact matches are resolved before duplicate present matches', () => {
   assert.deepEqual(
-    evaluateGuess('aaaaaa', 'abacad').map((x) => x.status),
-    ['exact', 'absent', 'exact', 'absent', 'exact', 'absent'],
+    evaluateGuess('eeeeee', 'peewee').map((x) => x.status),
+    ['absent', 'exact', 'exact', 'absent', 'exact', 'exact'],
   );
 });
 
@@ -28,11 +28,32 @@ test('directional arrows ignore exact and claimed target copies', () => {
   assert.equal(result[0].arrows.right, 1);
   assert.equal(result[1].status, 'exact');
   assert.equal(result[1].arrows.right, 1);
-  assert.equal(result[2].status, 'exact');
-  assert.equal(result[2].arrows.right, 1);
 });
 
-test('one-letter row accepts any single ASCII letter', () => {
+test('present tiles point at non-exact copies they claimed', () => {
+  const mail = evaluateGuess('mail', 'smutty');
+  assert.equal(mail[0].status, 'present');
+  assert.deepEqual(mail[0].arrows, { left: 0, right: 1 });
+
+  const comet = evaluateGuess('comet', 'smutty');
+  assert.equal(comet[2].status, 'present');
+  assert.deepEqual(comet[2].arrows, { left: 1, right: 0 });
+  assert.equal(comet[4].status, 'exact');
+  assert.deepEqual(comet[4].arrows, { left: 1, right: 0 });
+});
+
+test('arrow stacks split across directions and ignore exact copies', () => {
+  const result = evaluateGuess('be', 'exceed');
+  assert.equal(result[1].status, 'present');
+  assert.deepEqual(result[1].arrows, { left: 1, right: 2 });
+
+  const o = evaluateGuess('o', 'voodoo');
+  assert.equal(o[0].status, 'present');
+  assert.equal(o[0].arrows.left, 0);
+  assert.equal(o[0].arrows.right, 4);
+});
+
+test('one-letter row accepts any letter', () => {
   assert.equal(isValidGuess('z', 1, {}), true);
   assert.equal(isValidGuess('ab', 1, {}), false);
 });
@@ -45,12 +66,12 @@ test('dictionary validation requires the exact row length', () => {
 });
 
 test('keyboard status only improves', () => {
-  const first = mergeKeyboardStatuses({}, evaluateGuess('ab', 'axxxxx'), 'ab');
-  const second = mergeKeyboardStatuses(first, evaluateGuess('yx', 'xyyyyy'), 'xx');
-  assert.equal(first.a, 'exact');
-  assert.equal(first.b, 'absent');
-  assert.equal(second.x, 'present');
-  assert.equal(second.a, 'exact');
+  const first = mergeKeyboardStatuses({}, evaluateGuess('in', 'ilysia'), 'in');
+  const second = mergeKeyboardStatuses(first, evaluateGuess('si', 'ilysia'), 'si');
+  assert.equal(first.i, 'exact');
+  assert.equal(first.n, 'absent');
+  assert.equal(second.s, 'present');
+  assert.equal(second.i, 'exact');
 });
 
 test('daily numbering uses Philly date', () => {

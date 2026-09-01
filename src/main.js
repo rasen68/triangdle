@@ -112,13 +112,14 @@ function renderBoard() {
 }
 
 function addArrowStack(tile, direction, count) {
-  if (!count) return;
+  const n = Math.min(count, 4);
+  if (!n) return;
   const stack = document.createElement('span');
   stack.className = `arrow-stack ${direction}`;
-  for (let i = 0; i < count; i += 1) {
+  stack.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < n; i += 1) {
     const arrow = document.createElement('span');
-    arrow.className = 'arrow';
-    arrow.textContent = direction === 'left' ? '‹' : '›';
+    arrow.className = `arrow ${direction}`;
     stack.appendChild(arrow);
   }
   tile.appendChild(stack);
@@ -241,6 +242,7 @@ function submitActiveRow() {
   }
 
   state.activeRow = findNextOpenRow(state.activeRow);
+  setMessage('')
   render();
 }
 

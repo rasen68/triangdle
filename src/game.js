@@ -10,33 +10,40 @@ export function evaluateGuess(guessInput, targetInput) {
   const target = normalizeWord(targetInput);
   const result = Array.from({ length: guess.length }, () => ({ status: 'absent', arrows: { left: 0, right: 0 } }));
   const targetChars = [...target];
-  const claimed = Array(targetChars.length).fill(false);
+  const exactAt = Array(targetChars.length).fill(false);
 
   // Exact matches claim their target positions first.
   for (let i = 0; i < guess.length; i += 1) {
     if (guess[i] === targetChars[i]) {
       result[i].status = 'exact';
-      claimed[i] = true;
+      exactAt[i] = true;
     }
   }
 
   // Present matches claim the earliest still-unclaimed target copy.
+  const claimed = exactAt.slice();
   for (let i = 0; i < guess.length; i += 1) {
     if (result[i].status === 'exact') continue;
-    const targetIndex = targetChars.findIndex((char, index) => char === guess[i] && !claimed[index]);
+    const targetIndex = targetChars.findIndex((char, index) => (
+      char === guess[i] && !claimed[index]
+    ));
     if (targetIndex >= 0) {
       result[i].status = 'present';
       claimed[targetIndex] = true;
     }
   }
 
-  // Directional arrows point only to target copies which remain unclaimed.
-  // Exact/present matched copies and exact matches elsewhere do not contribute.
+  // Arrows count target copies of this letter that are not exact.
+  // Present-claimed copies still count; the exact tile itself does not.
   for (let i = 0; i < result.length; i += 1) {
     if (result[i].status === 'absent') continue;
     const letter = guess[i];
-    const left = claimed.filter((used, targetIndex) => !used && targetChars[targetIndex] === letter && targetIndex < i).length;
-    const right = claimed.filter((used, targetIndex) => !used && targetChars[targetIndex] === letter && targetIndex > i).length;
+    const left = targetChars.filter((char, index) => (
+      char === letter && index < i && !exactAt[index]
+    )).length;
+    const right = targetChars.filter((char, index) => (
+      char === letter && index > i && !exactAt[index]
+    )).length;
     result[i].arrows = { left, right };
   }
 
