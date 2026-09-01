@@ -52,6 +52,7 @@ async function init() {
   els.random.addEventListener('click', () => startGame(true));
   els.help.addEventListener('click', () => els.dialog.showModal());
   els.share.addEventListener('click', shareResult);
+  els.dialog.showModal();
 }
 
 function startGame(randomGame) {
