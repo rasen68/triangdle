@@ -4,36 +4,67 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Triangdle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600&family=Playfair+Display:wght@700&family=Roboto+Slab:wght@400;600&display=swap">
   <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
-  <h1>Triangdle</h1>
-  <p>
-    <button id="new-game-btn" type="button">Random</button>
-    <button id="help-btn" type="button">?</button>
-  </p>
-  <p>
-    Puzzle <strong id="puzzle-id">#1</strong>
-    Letters <strong id="score">0</strong>
-    Status <strong id="status">Playing</strong>
-  </p>
-  <div id="board" class="board" aria-label="Guess board"></div>
-  <p id="message" class="message" role="status" aria-live="polite"></p>
-  <div id="keyboard" class="keyboard" aria-label="On-screen keyboard"></div>
-  <p>
-    <button id="share-btn" type="button" disabled>Share result</button>
-  </p>
+  <main class="app">
+    <header class="masthead">
+      <div class="masthead-row">
+        <h1>Triangdle</h1>
+        <div class="masthead-actions">
+          <button id="new-game-btn" type="button" class="btn">
+            Random
+          </button>
+          <button
+            id="help-btn"
+            type="button"
+            class="btn-icon"
+            aria-label="How to play"
+          >?</button>
+        </div>
+      </div>
+    </header>
+
+    <p class="stats">
+      <span>Puzzle <strong id="puzzle-id">#1</strong></span>
+      <span>Letters <strong id="score">0</strong></span>
+      <span>Status <strong id="status">Playing</strong></span>
+    </p>
+
+    <div id="board" class="board" aria-label="Guess board"></div>
+    <p
+      id="message"
+      class="message"
+      role="status"
+      aria-live="polite"
+    ></p>
+    <div
+      id="keyboard"
+      class="keyboard"
+      aria-label="On-screen keyboard"
+    ></div>
+    <p class="toolbar">
+      <button id="share-btn" type="button" class="btn" disabled>
+        Share result
+      </button>
+    </p>
+  </main>
 
   <dialog id="help-dialog">
     <form method="dialog">
-      <button value="close" aria-label="Close">×</button>
+      <button value="close" class="btn-icon dialog-x" aria-label="Close">
+        ×
+      </button>
       <h2>How to play</h2>
       <p>Guess a 6-letter word using up to one guess of each length 1 to 6, plus an extra final guess.</p>
       <p>Each guess must be a valid word, except the first row, which can be any letter.</p>
       <p>The colors of the tiles will show how close your guess was to the word.</p>
       <p>Green means an exact match. Yellow means the letter is in the word, but in another spot. Gray means it is not in the word at all.</p>
-      <p>Arrows point you to other instances of the letter in the target word that haven't been matched yet.</p>
-      <button value="close">Close</button>
+      <p>Arrows point you to other (unmatched) copies of the letter in the target word.</p>
+      <button value="close" class="btn">Close</button>
     </form>
   </dialog>
 

@@ -99,7 +99,10 @@ function renderBoard() {
       const letter = row.guess[tileIndex] ?? '';
       const evaluation = row.evaluation[tileIndex];
       tile.className = `tile${letter ? ' filled' : ''}${evaluation ? ` ${evaluation.status}` : ''}`;
-      tile.textContent = letter.toUpperCase();
+      const glyph = document.createElement('span');
+      glyph.className = 'tile-letter';
+      glyph.textContent = letter.toUpperCase();
+      tile.appendChild(glyph);
 
       if (evaluation && evaluation.status !== 'absent') {
         addArrowStack(tile, 'left', evaluation.arrows.left);
