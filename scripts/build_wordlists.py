@@ -14,12 +14,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / 'data'
 
-TWELVE_DICTS_URL = (
-    'https://downloads.sourceforge.net/project/wordlist/'
-    '12Dicts/6.0/12dicts-6.0.2.zip'
-)
-TWELVE_DICTS_MEMBER = 'American/2of12.txt'
-
 SCOWL_URL = (
     'https://downloads.sourceforge.net/project/wordlist/'
     'SCOWL/2020.12.07/scowl-2020.12.07.zip'
@@ -34,7 +28,6 @@ SCOWL_WORDS_RE = re.compile(
 
 USER_AGENT = 'triangdle-wordlist-builder/1.0'
 ALLOWED_LENGTHS = (2, 3, 4, 5, 6)
-TARGET_LENGTH = 6
 DOWNLOAD_ATTEMPTS = 5
 
 
@@ -43,29 +36,18 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_dir = Path(tmp)
-        twelve_zip = tmp_dir / '12dicts-6.0.2.zip'
         scowl_zip = tmp_dir / 'scowl-2020.12.07.zip'
-        download(TWELVE_DICTS_URL, twelve_zip)
         download(SCOWL_URL, scowl_zip)
 
-        targets = {
-            word for word in read_zip_words(
-                twelve_zip, TWELVE_DICTS_MEMBER,
-            )
-            if len(word) == TARGET_LENGTH
-        }
         allowed = {length: set() for length in ALLOWED_LENGTHS}
         for word in read_scowl_words(scowl_zip):
             if len(word) in allowed:
                 allowed[len(word)].add(word)
-        allowed[TARGET_LENGTH].update(targets)
 
-    write_words(DATA / 'targets.txt', targets)
     for length in ALLOWED_LENGTHS:
         path = DATA / f'allowed-{length}.txt'
         write_words(path, allowed[length])
 
-    print(f'targets {len(targets)}')
     for length in ALLOWED_LENGTHS:
         print(f'allowed-{length} {len(allowed[length])}')
 
@@ -75,13 +57,6 @@ def parse_word(line: str) -> str | None:
     if word.isascii() and word.isalpha():
         return word
     return None
-
-
-def read_zip_words(zip_path: Path, member_suffix: str) -> set[str]:
-    with zipfile.ZipFile(zip_path) as archive:
-        name = zip_member(archive, member_suffix)
-        text = archive.read(name).decode('latin-1')
-    return words_from_text(text)
 
 
 def read_scowl_words(zip_path: Path) -> set[str]:
@@ -109,19 +84,6 @@ def words_from_text(text: str) -> set[str]:
         if word is not None:
             words.add(word)
     return words
-
-
-def zip_member(archive: zipfile.ZipFile, suffix: str) -> str:
-    suffix = suffix.lstrip('/')
-    hits = [
-        name for name in archive.namelist()
-        if name.replace('\\', '/').endswith(suffix)
-    ]
-    if not hits:
-        raise FileNotFoundError(
-            f'{suffix} not in {archive.filename}'
-        )
-    return hits[0]
 
 
 def write_words(path: Path, words: set[str]) -> None:
