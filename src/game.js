@@ -1,4 +1,4 @@
-export const ROW_LENGTHS = [1, 2, 3, 4, 5, 6, 6];
+export const ROW_LENGTHS = [1, 2, 3, 4, 5, 6];
 export const STATUS_RANK = { absent: 0, present: 1, exact: 2 };
 
 export function normalizeWord(value) {

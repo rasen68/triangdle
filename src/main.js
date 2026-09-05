@@ -27,7 +27,6 @@ const els = {
   keyboard: document.querySelector('#keyboard'),
   puzzleId: document.querySelector('#puzzle-id'),
   score: document.querySelector('#score'),
-  status: document.querySelector('#status'),
   message: document.querySelector('#message'),
   share: document.querySelector('#share-btn'),
   random: document.querySelector('#new-game-btn'),
@@ -80,7 +79,6 @@ function render() {
 function renderStats() {
   els.puzzleId.textContent = state.randomGame ? 'Random' : `#${state.puzzleNumber}`;
   els.score.textContent = String(state.score);
-  els.status.textContent = state.gameOver ? (state.won ? 'Won' : 'Lost') : 'Playing';
 }
 
 function renderBoard() {
@@ -232,7 +230,7 @@ function submitActiveRow() {
     state.won = true;
     state.gameOver = true;
     render();
-    setMessage(`You found ${state.target.toUpperCase()} in ${state.score}/27 letters.`, false, true);
+    setMessage(`You found ${state.target.toUpperCase()} in ${state.score}/21 letters.`, false, true);
     return;
   }
 
