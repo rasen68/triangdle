@@ -23,6 +23,4 @@ python3 -m http.server 8080
 
 Then open `http://localhost:8080`.
 
-`npm run words` downloads 12dicts and SCOWL and writes
-`data/allowed-*.txt` and `data/targets.txt`. Those files are generated
-and are not committed.
+`npm run words` downloads SCOWL / English Speller Database to generate `data/allowed-*.txt`, which are the list of possible guesses. `data/targets.txt`, the possible target words, is hand-maintained.
