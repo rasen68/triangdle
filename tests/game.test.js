@@ -4,6 +4,8 @@ import {
   evaluateGuess,
   isValidGuess,
   mergeKeyboardStatuses,
+  isGameOver,
+  isWin,
   dailyNumber,
   seededIndex,
 } from '../src/game.js';
@@ -112,4 +114,34 @@ test('seeded index is deterministic and in range', () => {
   const b = seededIndex(42, 40);
   assert.equal(a, b);
   assert.ok(a >= 0 && a < 40);
+});
+
+const board = (...entries) => entries.map(([length, guess]) => ({
+  length,
+  guess: guess ?? '',
+  submitted: guess != null,
+}));
+
+test('a wrong full-length guess ends the game with rows to spare', () => {
+  const rows = board([1, 'a'], [2], [3], [4], [5], [6, 'planet']);
+  assert.equal(isGameOver(rows, 'silver'), true);
+  assert.equal(isWin(rows, 'silver'), false);
+});
+
+test('the game runs on while only short rows are submitted', () => {
+  const rows = board([1, 'a'], [2, 'an'], [3, 'ant'], [4], [5], [6]);
+  assert.equal(isGameOver(rows, 'silver'), false);
+  assert.equal(isWin(rows, 'silver'), false);
+});
+
+test('a correct full-length guess wins', () => {
+  const rows = board([1], [2], [3], [4], [5], [6, 'silver']);
+  assert.equal(isGameOver(rows, 'silver'), true);
+  assert.equal(isWin(rows, 'SILVER '), true);
+});
+
+test('spending every row ends the game even without a full-length row', () => {
+  const rows = board([1, 'a'], [2, 'an'], [3, 'ant']);
+  assert.equal(isGameOver(rows, 'silver'), true);
+  assert.equal(isWin(rows, 'silver'), false);
 });

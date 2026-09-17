@@ -46,8 +46,8 @@
       aria-label="On-screen keyboard"
     ></div>
     <p class="toolbar">
-      <button id="share-btn" type="button" class="btn" disabled>
-        Share result
+      <button id="result-btn" type="button" class="btn" hidden>
+        See result
       </button>
     </p>
   </main>
@@ -64,6 +64,25 @@
       <p>Green means an exact match. Yellow means the letter is in the word, but in another spot. Gray means it is not in the word at all.</p>
       <p>Arrows point you to other (unmatched) copies of the letter in the target word.</p>
       <button value="close" class="btn">Close</button>
+    </form>
+  </dialog>
+
+  <dialog id="result-dialog">
+    <form method="dialog">
+      <button value="close" class="btn-icon dialog-x" aria-label="Close">
+        ×
+      </button>
+      <h2 id="result-title">Result</h2>
+      <p id="result-summary"></p>
+      <p id="result-detail"></p>
+      <p id="result-note" class="result-note" role="status" aria-live="polite">
+      </p>
+      <p class="dialog-actions">
+        <button id="share-btn" type="button" class="btn">
+          Share result
+        </button>
+        <button value="close" class="btn">Close</button>
+      </p>
     </form>
   </dialog>
 

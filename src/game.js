@@ -68,6 +68,21 @@ export function mergeKeyboardStatuses(current, evaluation, guess) {
   return next;
 }
 
+// The full-length row is the only one that can win, so submitting it ends
+// the game either way; shorter rows left over are dead weight.
+export function isGameOver(rows, targetInput) {
+  const target = normalizeWord(targetInput);
+  if (rows.every((row) => row.submitted)) return true;
+  return rows.some((row) => row.submitted && row.length === target.length);
+}
+
+export function isWin(rows, targetInput) {
+  const target = normalizeWord(targetInput);
+  return rows.some((row) => (
+    row.submitted && normalizeWord(row.guess) === target
+  ));
+}
+
 const DAILY_TZ = 'America/New_York';
 
 function civilDateInZone(date, timeZone) {

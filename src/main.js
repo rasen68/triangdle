@@ -3,10 +3,14 @@ import {
   evaluateGuess,
   isValidGuess,
   mergeKeyboardStatuses,
+  isGameOver,
+  isWin,
   chooseDailyTarget,
   chooseRandomTarget,
 } from './game.js';
 import { loadWordLists } from './data.js';
+
+const MAX_SCORE = ROW_LENGTHS.reduce((total, length) => total + length, 0);
 
 const state = {
   dictionaries: {},
@@ -29,9 +33,15 @@ const els = {
   score: document.querySelector('#score'),
   message: document.querySelector('#message'),
   share: document.querySelector('#share-btn'),
+  result: document.querySelector('#result-btn'),
   random: document.querySelector('#new-game-btn'),
   help: document.querySelector('#help-btn'),
   dialog: document.querySelector('#help-dialog'),
+  resultDialog: document.querySelector('#result-dialog'),
+  resultTitle: document.querySelector('#result-title'),
+  resultSummary: document.querySelector('#result-summary'),
+  resultDetail: document.querySelector('#result-detail'),
+  resultNote: document.querySelector('#result-note'),
 };
 
 const KEYBOARD_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
@@ -50,6 +60,7 @@ async function init() {
   document.addEventListener('keydown', onKeydown);
   els.random.addEventListener('click', () => startGame(true));
   els.help.addEventListener('click', () => els.dialog.showModal());
+  els.result.addEventListener('click', openResult);
   els.share.addEventListener('click', shareResult);
   els.dialog.showModal();
 }
@@ -65,6 +76,7 @@ function startGame(randomGame) {
   state.gameOver = false;
   state.won = false;
   state.keyboard = {};
+  if (els.resultDialog.open) els.resultDialog.close();
   render();
   setMessage(randomGame ? 'Random puzzle' : 'Choose any row to begin.');
 }
@@ -73,7 +85,7 @@ function render() {
   renderStats();
   renderBoard();
   renderKeyboard();
-  els.share.disabled = !state.gameOver;
+  els.result.hidden = !state.gameOver;
 }
 
 function renderStats() {
@@ -85,10 +97,15 @@ function renderBoard() {
   els.board.innerHTML = '';
   state.rows.forEach((row, index) => {
     const rowEl = document.createElement('div');
-    rowEl.className = `row${index === state.activeRow && !state.gameOver && !row.submitted ? ' active' : ''}${row.submitted ? ' locked' : ''}`;
+    const active = index === state.activeRow && !state.gameOver
+      && !row.submitted;
+    const inert = state.gameOver && !row.submitted;
+    rowEl.className = `row${active ? ' active' : ''}`
+      + `${row.submitted ? ' locked' : ''}${inert ? ' inert' : ''}`;
     rowEl.tabIndex = row.submitted || state.gameOver ? -1 : 0;
     rowEl.setAttribute('role', 'button');
     rowEl.setAttribute('aria-label', `${row.length}-letter row${row.submitted ? ', submitted' : ''}`);
+    if (inert) rowEl.setAttribute('aria-disabled', 'true');
     rowEl.addEventListener('click', () => selectRow(index));
     rowEl.addEventListener('focus', () => selectRow(index));
 
@@ -226,25 +243,41 @@ function submitActiveRow() {
   state.score += row.length;
   state.keyboard = mergeKeyboardStatuses(state.keyboard, row.evaluation, row.guess);
 
-  if (row.length === 6 && row.guess === state.target) {
-    state.won = true;
-    state.gameOver = true;
-    render();
-    setMessage(`You found ${state.target.toUpperCase()} in ${state.score}/21 letters.`, false, true);
-    return;
-  }
-
-  if (state.rows.every((item) => item.submitted)) {
-    state.gameOver = true;
-    state.won = false;
-    render();
-    setMessage(`No match. The target was ${state.target.toUpperCase()}.`, true);
+  if (isGameOver(state.rows, state.target)) {
+    endGame(isWin(state.rows, state.target));
     return;
   }
 
   state.activeRow = findNextOpenRow(state.activeRow);
   setMessage('')
   render();
+}
+
+function endGame(won) {
+  state.gameOver = true;
+  state.won = won;
+  const word = state.target.toUpperCase();
+  const spent = `${state.score}/${MAX_SCORE} letters`;
+  const summary = won
+    ? `You found ${word} in ${spent}.`
+    : `The word was ${word}. You spent ${spent}.`;
+  render();
+  setMessage(summary, !won, won);
+
+  els.resultDialog.classList.toggle('won', won);
+  els.resultDialog.classList.toggle('lost', !won);
+  els.resultTitle.textContent = won ? 'You got it' : 'No match';
+  els.resultSummary.textContent = summary;
+  els.resultDetail.textContent = state.randomGame
+    ? 'Random puzzle'
+    : `Triangdle #${state.puzzleNumber}`;
+  openResult();
+}
+
+function openResult() {
+  if (!state.gameOver || els.resultDialog.open) return;
+  els.resultNote.textContent = '';
+  els.resultDialog.showModal();
 }
 
 function findNextOpenRow(from) {
@@ -282,7 +315,7 @@ async function shareResult() {
 
   try {
     await navigator.clipboard.writeText(text);
-    setMessage('Result copied to clipboard.', false, true);
+    els.resultNote.textContent = 'Result copied to clipboard.';
   } catch {
     window.prompt('Copy your result:', text);
   }
