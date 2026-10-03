@@ -357,6 +357,27 @@ dialog p {
   line-height: 1.45;
 }
 
+.help-examples {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.help-examples li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+  line-height: 1.45;
+}
+
+.help-examples .tile {
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  font-size: 1rem;
+}
+
 dialog .btn {
   display: block;
   margin-left: auto;
