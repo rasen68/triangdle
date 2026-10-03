@@ -19,7 +19,7 @@ const state = {
   puzzleNumber: null,
   randomGame: false,
   rows: ROW_LENGTHS.map((length) => ({ length, guess: '', submitted: false, evaluation: [] })),
-  activeRow: 0,
+  activeRow: 3,
   score: 0,
   gameOver: false,
   won: false,
@@ -71,7 +71,7 @@ function startGame(randomGame) {
   state.puzzleNumber = selection.number;
   state.randomGame = randomGame;
   state.rows = ROW_LENGTHS.map((length) => ({ length, guess: '', submitted: false, evaluation: [] }));
-  state.activeRow = 0;
+  state.activeRow = 3;
   state.score = 0;
   state.gameOver = false;
   state.won = false;
@@ -97,8 +97,7 @@ function renderBoard() {
   els.board.innerHTML = '';
   state.rows.forEach((row, index) => {
     const rowEl = document.createElement('div');
-    const active = index === state.activeRow && !state.gameOver
-      && !row.submitted;
+    const active = index === state.activeRow && !state.gameOver;
     const inert = state.gameOver && !row.submitted;
     rowEl.className = `row${active ? ' active' : ''}`
       + `${row.submitted ? ' locked' : ''}${inert ? ' inert' : ''}`;
@@ -108,6 +107,15 @@ function renderBoard() {
     if (inert) rowEl.setAttribute('aria-disabled', 'true');
     rowEl.addEventListener('click', () => selectRow(index));
     rowEl.addEventListener('focus', () => selectRow(index));
+
+    if (active) {
+      const hint = document.createElement('span');
+      hint.className = 'row-navigation';
+      hint.textContent = '↑↓';
+      hint.setAttribute('aria-hidden', 'true');
+      rowEl.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown');
+      rowEl.appendChild(hint);
+    }
 
     for (let tileIndex = 0; tileIndex < row.length; tileIndex += 1) {
       const tile = document.createElement('div');
@@ -168,6 +176,7 @@ function keyButton(label, key, extraClass = '') {
 
 function selectRow(index) {
   if (state.gameOver || state.rows[index].submitted) return;
+  if (state.rows[state.activeRow].submitted) setMessage('');
   state.activeRow = index;
   renderBoard();
 }
@@ -248,8 +257,7 @@ function submitActiveRow() {
     return;
   }
 
-  state.activeRow = findNextOpenRow(state.activeRow);
-  setMessage('')
+  setMessage('Choose another row with ↑↓ or click a row.');
   render();
 }
 
@@ -278,14 +286,6 @@ function openResult() {
   if (!state.gameOver || els.resultDialog.open) return;
   els.resultNote.textContent = '';
   els.resultDialog.showModal();
-}
-
-function findNextOpenRow(from) {
-  for (let offset = 1; offset <= state.rows.length; offset += 1) {
-    const index = (from + offset) % state.rows.length;
-    if (!state.rows[index].submitted) return index;
-  }
-  return from;
 }
 
 function shakeRow() {

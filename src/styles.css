@@ -135,18 +135,33 @@ h1 {
   align-items: flex-start;
   gap: 0.4rem;
   margin-bottom: 1rem;
+  padding-left: 2rem;
 }
 
 .row {
+  position: relative;
   display: flex;
   gap: 0.4rem;
   width: max-content;
   border-radius: var(--radius);
 }
 
-.row.active:not(.locked) {
+.row.active {
   outline: 2px solid var(--blue);
   outline-offset: 3px;
+}
+
+.row-navigation {
+  position: absolute;
+  right: calc(100% + 0.6rem);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--blue);
+  font-family: var(--font-ui);
+  font-size: 1.25rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .row.inert {
