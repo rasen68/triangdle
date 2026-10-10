@@ -257,7 +257,7 @@ function submitActiveRow() {
     return;
   }
 
-  setMessage('Choose another row with ↑↓ or click a row.');
+  setMessage('Click another row or use the arrow keys.');
   render();
 }
 

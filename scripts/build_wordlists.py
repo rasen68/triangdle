@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''Download 12dicts and SCOWL, then write data/*.txt.'''
+'''Download SCOWL word lists and write to data/*.txt.'''
 
 from __future__ import annotations
 
